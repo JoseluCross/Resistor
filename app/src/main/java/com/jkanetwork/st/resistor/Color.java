@@ -6,7 +6,7 @@ package com.jkanetwork.st.resistor;
 public enum Color {
     BLACK("996B42" ),BROWN("FF0000"),RED("FFA500"),
     ORANGE("FFFF00"),YELLOW("00FF00"),GREEN("0000FF"),
-    BLUE("EE82EE"),VIOLET("8A2BE2"),GREY("FFFFFF"),
+    BLUE("b168b4"),VIOLET("b3b3b3"),GREY("FFFFFF"),
     WHITE("000000");
 
     //Attributes
@@ -34,9 +34,9 @@ public enum Color {
                 return Color.GREEN;
             case "0000ff":
                 return  Color.BLUE;
-            case "8a2be2":
+            case "b168b4":
                 return  Color.VIOLET;
-            case "808080":
+            case "b3b3b3":
                 return  Color.GREY;
             default:
                 return Color.WHITE;

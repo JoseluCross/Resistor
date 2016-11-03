@@ -1,13 +1,8 @@
 package com.jkanetwork.st.resistor;
 
-import android.graphics.*;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,27 +11,17 @@ import android.widget.TextView;
 
 public class resistors extends AppCompatActivity {
 
-    private Button color1,color2,color3;
+    private Button color1,color2,color3,tolerance;
     private TextView resistorNum;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_resistors);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
         color1 = (Button) findViewById(R.id.color1);
         color2 = (Button) findViewById(R.id.color2);
         color3 = (Button) findViewById(R.id.color3);
+        tolerance = (Button) findViewById(R.id.tolerance);
         resistorNum = (TextView) findViewById(R.id.resistor_num);
     }
 
@@ -71,6 +56,13 @@ public class resistors extends AppCompatActivity {
     public void changeColor3(View view){
         changeColor(color3);
     }
+    public void changeToleranceColor(View view){
+        ToleranceColor color;
+        ColorDrawable buttonColor = (ColorDrawable) tolerance.getBackground();
+        String colorString = Integer.toHexString(buttonColor.getColor());
+        color = ToleranceColor.getColorByNum(colorString.substring(2,8));
+        tolerance.setBackgroundColor(android.graphics.Color.parseColor("#"+color.getColorNext()));
+    }
 
     private void changeColor(Button button){
         Color color;
@@ -83,19 +75,67 @@ public class resistors extends AppCompatActivity {
     public void calculateResistance(View view){
         String number = "";
         Color[] colors = new Color[3];
+        double resistanceValue=0;
         String[] colorString = new String[3];
         colorString[0] = Integer.toHexString((((ColorDrawable) color1.getBackground()).getColor()));
         colorString[1] = Integer.toHexString((((ColorDrawable) color2.getBackground()).getColor()));
         colorString[2] = Integer.toHexString((((ColorDrawable) color3.getBackground()).getColor()));
-
         for(int i = 0; i<3; i++) {
             colors[i] = Color.getColorByNum(colorString[i].substring(2,8));
-            number += getResistorValue(colors[i],i);
+            double value = getResistorValue(colors[i],i);
+            switch (i) {
+                case 0:
+                    resistanceValue += (value * 10);
+                    break;
+                case 1:
+                    resistanceValue += value;
+                    break;
+                case 2:
+                    resistanceValue *= value;
+                    break;
+                }
         }
-        resistorNum.setText(number);
+        char potential;
+        if(resistanceValue > Math.pow(10,6)) {
+            potential = 'M';
+            resistanceValue /= 1000000;
+        }else if(resistanceValue > Math.pow(10,3)) {
+            potential = 'K';
+            resistanceValue /= 1000;
+        }else
+            potential = ' ';
+        int toleranceColor = ((ColorDrawable) this.tolerance.getBackground()).getColor();
+        ToleranceColor tolerance = ToleranceColor.getColorByNum(Integer.toHexString(toleranceColor).substring(2,8));
+        number = getTolerance(tolerance);
+        resistorNum.setText(resistanceValue + "" + potential + "" + number + "Ω");
     }
 
-    private String getResistorValue(Color color, int p) {
+    private String getTolerance(ToleranceColor color){
+        String tolerance = " ±";
+        switch (color){
+            case BLACK:
+                return "";
+            case BROWN:
+                return tolerance + "1%";
+            case RED:
+                return tolerance + "2%";
+            case GREEN:
+                return tolerance + "0.5%";
+            case BLUE:
+                return tolerance + "0.25%";
+            case VIOLET:
+                return tolerance + "0.10%";
+            case GREY:
+                return tolerance + "0.05%";
+            case GOLD:
+                return tolerance + "5%";
+            case SILVER:
+                return tolerance + "10%";
+            default:
+                return "";
+        }
+    }
+    private double getResistorValue(Color color, int p) {
         int value;
         switch (color) {
             case BLACK:
@@ -128,20 +168,9 @@ public class resistors extends AppCompatActivity {
             default:
                 value = 9;
         }
-        String ret = "";
         if (p == 2) {
-            double power = (int) Math.pow(10, value);
-            if (power >= Math.pow(10, 6)) {
-                ret += power / Math.pow(10, 6) + "M";
-
-            } else if (power >= Math.pow(10, 3)) {
-                ret += power / Math.pow(10, 3) + "K";
-            } else {
-                ret += power;
-            }
-            ret += "\u0937";
+            return Math.pow(10, value);
         } else
-            ret += value;
-        return ret;
+            return value;
     }
 }
